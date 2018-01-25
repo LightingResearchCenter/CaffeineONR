@@ -201,7 +201,6 @@ readData <- function( test) {
   MOB <- readData("MOB")
   GNG <- readData("GNG")
   
-  library(xlsx)
   OB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/convertedData/",format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "OB.csv")
   TB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/convertedData/",format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "TB.csv")
   MOB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/convertedData/", format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "MOB.csv")
