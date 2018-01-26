@@ -72,7 +72,18 @@ addTime <- function(data){
   data$session <- ifelse((data$Subject_id == "s717" ) & data$session > 5, data$session - 1, data$session)
   
   
+  
+  ##Adding new variables: caffein vs. placedbo, time facotrs
+  
+  data$condition2 <- substr(data$condition, 11, 15 )
+  data$condition2 <- ifelse(data$condition2 == "/Caff", "Caffe",  ifelse(data$condition2 == "/Plac", "Place", data$condition2 ))
+  data$light <- substr(data$condition, 1, 4 )
+  
+  data$time3 <- ifelse(data$time2 > 60 & data$time2 < 120, data$time2 - 60, ifelse(data$time2 > 120, data$time2 - 120, data$time2 ) ) 
+  data$test_period <- ifelse(data$time2 > 60 & data$time2 < 120, 2, ifelse(data$time2 > 120, 3, 1 ) ) 
+  
   return(data)
+  
 }
 addAccTB <- function(TB){
   
