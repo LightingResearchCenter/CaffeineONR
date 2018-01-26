@@ -10,7 +10,7 @@ readData <- function( test) {
   df = data.frame()
   
   library(readr)
-  curr.dir = paste("//root/projects/Caffeine_ONR_Study/performanceTestData/complete_data0") # paste("//root/projects/Caffeine_ONR_Study/performanceTestData/session", as.character(session), sep = '')  
+  curr.dir = paste("//root/projects/Caffeine_ONR_Study/performanceTestData/complete_data") # paste("//root/projects/Caffeine_ONR_Study/performanceTestData/session", as.character(session), sep = '')  
   library(readxl)
   ref_sheet <- read_excel("//root/projects/Caffeine_ONR_Study/performanceTestData/subConditions.xlsx")
   
