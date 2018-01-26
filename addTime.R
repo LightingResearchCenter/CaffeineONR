@@ -57,11 +57,41 @@ addTime <- function(data){
     
   }
   output_data <- data.frame(uni_list2, start_of_testing_period, initial_test, time_stamp_current_test, diff_output_list1)
+  
+  ##Adding session
+  data$session <- ifelse(data$date == "2017-09-29" | data$date == "2017-09-30", 1, 
+                                         ifelse(data$date == "2017-10-06" | data$date == "2017-10-07", 2, 
+                                                ifelse(data$date == "2017-10-13" | data$date == "2017-10-14", 3, 
+                                                       ifelse(data$date == "2017-10-20" | data$date == "2017-10-21", 4, 
+                                                              ifelse(data$date == "2017-10-27" | data$date == "2017-10-28", 5, 
+                                                                     ifelse(data$date == "2017-11-03" | data$date == "2017-11-04", 6, 7
+                                                                     ))))))
+  ###Special cases for adding session
+  data$session <- ifelse((data$Subject_id == "s706" | data$Subject_id == "s707") & data$session > 1, data$session - 1, data$session)
+  data$session <- ifelse((data$Subject_id == "s713" | data$Subject_id == "s714") & data$session > 3, data$session - 1, data$session)
+  data$session <- ifelse((data$Subject_id == "s717" ) & data$session > 5, data$session - 1, data$session)
+  
+  
   return(data)
+}
+addAccTB <- function(TB){
+  
+  TB2 <- subset(TB, uni1 != "s712-2017-10-13--TB")
+  
+  TB3 <- subset(TB2, trial_num > 2)
+  
+  TB3Shifted  <- subset(TB2, trial_num < 105)
+  
+  TB3$lengthShifted <- TB3Shifted$length
+  
+  TB3$TwoBack_Test <- ifelse(TB3$length == TB3$lengthShifted,"MATCH","NO-MATCH")
+  TB3$accuracy <- ifelse(TB3$response == TB3$TwoBack_Test,1,0)
+  
+  return(TB3)
 }
 
 addTimeMain <- function( ) {
-  dir <- "//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/convertedData"
+  dir <- "//root/projects/Caffeine_ONR_Study/performanceTestData/convertedData"
   
   fileList <- list.files(dir)[grep(".csv", list.files(dir))]
   
@@ -82,15 +112,16 @@ addTimeMain <- function( ) {
   GNG2 <- addTime(GNG)
   OB2 <- addTime(OB)
   TB2 <- addTime(TB)
-  MOB2<- addTime(MOB)
+  TB3 <- addAccTB(TB2)
+  MOB2 <- addTime(MOB)
   
-  OB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/convertedData/",format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "OB_addedTime.csv")
-  TB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/convertedData/",format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "TB_addedTime.csv")
-  MOB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/convertedData/", format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "MOB_addedTime.csv")
-  GNG_filename <- paste0("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/convertedData/", format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "GNG_addedTime.csv")
+  OB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performanceTestData/addedTime/",format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "OB_addedTime.csv")
+  TB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performanceTestData/addedTime/",format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "TB_addedTime.csv")
+  MOB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performanceTestData/addedTime/", format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "MOB_addedTime.csv")
+  GNG_filename <- paste0("//root/projects/Caffeine_ONR_Study/performanceTestData/addedTime/", format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "GNG_addedTime.csv")
   
   write.csv(OB2, OB_filename, row.names = FALSE)
-  write.csv(TB2, TB_filename, row.names = FALSE)
+  write.csv(TB3, TB_filename, row.names = FALSE)
   write.csv(MOB2, MOB_filename, row.names = FALSE)
   write.csv(GNG2, GNG_filename, row.names = FALSE)
   }
