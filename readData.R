@@ -10,9 +10,9 @@ readData <- function( test) {
   df = data.frame()
   
   library(readr)
-  curr.dir = paste("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/complete_data0") # paste("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/session", as.character(session), sep = '')  
+  curr.dir = paste("//root/projects/Caffeine_ONR_Study/performanceTestData/complete_data0") # paste("//root/projects/Caffeine_ONR_Study/performanceTestData/session", as.character(session), sep = '')  
   library(readxl)
-  ref_sheet <- read_excel("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/subConditions.xlsx")
+  ref_sheet <- read_excel("//root/projects/Caffeine_ONR_Study/performanceTestData/subConditions.xlsx")
   
   ref_sheet$date_start <-  as.Date(ref_sheet$date, format='%m/%d/%Y')
   ref_sheet$date_end <-  as.Date(ref_sheet$date, format='%m/%d/%Y') +1
@@ -201,10 +201,10 @@ readData <- function( test) {
   MOB <- readData("MOB")
   GNG <- readData("GNG")
   
-  OB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/convertedData/",format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "OB.csv")
-  TB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/convertedData/",format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "TB.csv")
-  MOB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/convertedData/", format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "MOB.csv")
-  GNG_filename <- paste0("//root/projects/Caffeine_ONR_Study/performance_tests/performance_test_data/convertedData/", format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "GNG.csv")
+  OB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performanceTestData/convertedData/",format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "OB.csv")
+  TB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performanceTestData/convertedData/",format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "TB.csv")
+  MOB_filename <- paste0("//root/projects/Caffeine_ONR_Study/performanceTestData/convertedData/", format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "MOB.csv")
+  GNG_filename <- paste0("//root/projects/Caffeine_ONR_Study/performanceTestData/convertedData/", format(Sys.time(), "%Y-%m-%d_%H%M%S_"), "GNG.csv")
   
   write.csv(OB, OB_filename, row.names = FALSE)
   write.csv(TB, TB_filename, row.names = FALSE)
