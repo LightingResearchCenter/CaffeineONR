@@ -8,7 +8,7 @@ library(Rmisc)
 library(MuMIn)
 library(ReporteRs)
 library(magrittr)
-load("//root/projects/Caffeine_ONR_Study/performanceTestData/tables/outputList.RData")
+#load("//root/projects/Caffeine_ONR_Study/performanceTestData/tables/outputList.RData")
 
 add_plotSigs <- function(means, comparisons, x_str, y_str, include_fill){
   
@@ -119,10 +119,14 @@ colNum <- function(dataFrame){
 }
 
 addLsmeans <- function(doc0, lsmeansComparisons, name, numCols){
-  
+  library(stringr)
   lsmeansComparisons$contrasts.contrast <- as.factor(lsmeansComparisons$contrasts.contrast)
   print(name)
   print(numCols)
+  lsmeansComparisons$number<- str_count(lsmeansComparisons$contrasts.contrast, "Dim")
+  
+  lsmeansComparisons <- subset(lsmeansComparisons, number < 2)
+  lsmeansComparisons$number <- NULL
   #lsmeansComparisons$contrasts.contrast <- revalue(lsmeansComparisons$contrasts.contrast, c("Active - Placebo" = "CSE - CSN"))
   if(numCols == 6){
     colnames(lsmeansComparisons)[1] <- "Compared groups"
@@ -148,28 +152,34 @@ addLsmeans <- function(doc0, lsmeansComparisons, name, numCols){
   }
   
   
-  lsmeansComparisons$p <-  ifelse(lsmeansComparisons$p == 1, "1", 
-                                  ifelse(!is.na(lsmeansComparisons$p), substr(as.character(sprintf("%.3f", round(lsmeansComparisons$p, digits = 3))), 2, 5), lsmeansComparisons$p))
+  #lsmeansComparisons$p <-  ifelse(lsmeansComparisons$p == 1, "1", ifelse(!is.na(lsmeansComparisons$p), substr(as.character(sprintf("%.3f", round(lsmeansComparisons$p, digits = 3))), 2, 5), lsmeansComparisons$p))
   
+  lsmeansComparisons$p <- ifelse(round(lsmeansComparisons$p, digits = 3) == 1, "1", ifelse(round(lsmeansComparisons$p, digits = 3) < .05, paste(substr(as.character(sprintf("%.3f", round(lsmeansComparisons$p, digits = 3))), 2, 5), "*", sep = " ") ,substr(as.character(sprintf("%.3f", round(lsmeansComparisons$p, digits = 3))), 2, 5) ) )
   
   lsmeansComparisons$t <-  ifelse(!is.na(lsmeansComparisons$t), as.character(round(lsmeansComparisons$t, digits = 3)), lsmeansComparisons$t)
   
   
   
   
-  
   doc0 = addParagraph( doc0,name, stylename = "Normal" )
   
+  textProp <- textProperties()
   
   sigFTable2 = vanilla.table( data = lsmeansComparisons )
-  if(numCols == 7){
-    sigFTable2[as.numeric(lsmeansComparisons$p) < .05, 5] = chprop( baseCellProp, background.color = "green")
-    
+  sigFTable2[as.numeric(substr(lsmeansComparisons$p, 1, 4)) < .05] = chprop( textProp, font.weight = "bold") 
+  
+  if(FALSE){
+    if(numCols == 7){
+      sigFTable2[as.numeric(lsmeansComparisons$p) < .05, 5] = chprop( baseCellProp, background.color = "green")
+      
+      
+    }
+    if(numCols == 6){
+      sigFTable2[as.numeric(lsmeansComparisons$p) < .05, 4] = chprop( baseCellProp, background.color = "green")
+      
+    }  
   }
-  if(numCols == 6){
-    sigFTable2[as.numeric(lsmeansComparisons$p) < .05, 4] = chprop( baseCellProp, background.color = "green")
-    
-  }  
+
   doc0 = addFlexTable(doc0, sigFTable2)
   
 }
@@ -184,8 +194,8 @@ doc <- addTitle( doc, outputList[[1]][[1]][[1]], level = 1 )
 outputList[[1]][[1]][[1]]
 outputList[[1]][[2]]
 
-  name <- outputList[[1]][[2]][[1]][[1]]
-  df <- outputList[[1]][[2]][[1]][[2]]
+  name <- outputList[[1]][[2]][[1]][[1]][[1]]
+  df <- outputList[[1]][[2]][[1]][[1]][[2]]
   
   
   lsmeans <- data.frame(summary(df)[1])
@@ -196,9 +206,8 @@ outputList[[1]][[2]]
   gg0 <- add_plotSigs(lsmeans, lsmeansComparisons, "Caffeine", "Mean hit rate", TRUE)
   doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
   
-  
-  name <- outputList[[1]][[2]][[2]][[1]]
-  df <- outputList[[1]][[2]][[2]][[2]]
+  name <- outputList[[1]][[2]][[1]][[2]][[1]]
+  df <- outputList[[1]][[2]][[1]][[2]][[2]]
   
   lsmeans <- data.frame(summary(df)[1])
   lsmeansComparisons <- data.frame(summary(df)[2])
@@ -209,8 +218,28 @@ outputList[[1]][[2]]
   doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
   
 
+  name <- outputList[[1]][[2]][[2]][[1]]
+  df <- outputList[[1]][[2]][[2]][[2]]
 
-
+  lsmeans <- data.frame(summary(df)[1])
+  lsmeansComparisons <- data.frame(summary(df)[2])
+  addLsmeans(doc,lsmeansComparisons, name, colNum(lsmeansComparisons))
+  
+  lsmeans$condition <- paste(lsmeans$lsmeans.light, lsmeans$lsmeans.condition2)
+  gg0 <- ggplot(lsmeans, aes(x = lsmeans.test_period, y = lsmeans.lsmean, colour = lsmeans.light, linetype = lsmeans.condition2, group = condition))+
+    #geom_bar(position=position_dodge(), stat="identity", colour =  "black") +
+    geom_point() +
+    geom_line()+
+    geom_errorbar(aes(ymin=lsmeans.lsmean-lsmeans.SE, ymax=lsmeans.lsmean+lsmeans.SE),
+                  width=.2)+
+    theme(axis.title.y=element_text(vjust=2), legend.title=element_blank(), legend.position="bottom") +
+    theme(legend.title=element_blank()) +
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))+ 
+    theme(legend.position="none") +
+    scale_colour_manual(values=c("red4", "deepskyblue4",  "gray30" )) +
+    labs(x="Period" , y = "GNG hit rate") +
+    facet_grid(.~lsmeans.condition2)
+  doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 6, height = 3)
 
 #"GNG false_positve"
 doc <- addTitle( doc, outputList[[2]][[1]][[1]], level = 1 )
@@ -465,10 +494,12 @@ outputList[[14]][[2]]
   lsmeansComparisons <- data.frame(summary(df)[2])
     addLsmeans(doc,lsmeansComparisons, name, colNum(lsmeansComparisons))
 
-  
+    gg0 <- add_plotSigs(lsmeans, lsmeansComparisons, "Test period", "2-back accuracy", FALSE)
+    doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+    
   #add_plotSigs2(lsmeans, lsmeansComparisons, "Light:Test period", "2-back mean accuracy")
   ########******* ###********** fix
-
+if(FALSE){
   gg0 <- ggplot(lsmeans, aes(x = lsmeans.test_period, y = lsmeans.lsmean, fill = lsmeans.light))+
     geom_bar(position=position_dodge(), stat="identity", colour =  "black") +
     geom_errorbar(aes(ymin=lsmeans.lsmean-lsmeans.SE, ymax=lsmeans.lsmean+lsmeans.SE),
@@ -480,15 +511,17 @@ outputList[[14]][[2]]
     theme(legend.position="none") +
     scale_fill_manual(values=c("red4", "deepskyblue4",  "gray80" )) +
     labs(x="Period" , y = "2-back mean accuracy") 
-    #geom_signif(comparisons = list(c("Caffe:Blue", "Place:Blue")), annotations=".017" )
+  #geom_signif(comparisons = list(c("Caffe:Blue", "Place:Blue")), annotations=".017" )
   doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
   
   
+}
+
 outputList[[15]][[1]][[1]]
 doc <- addTitle( doc, outputList[[15]][[1]][[1]], level = 1 )
 outputList[[15]][[2]]
 
-if(FALSE){
+
   name <- outputList[[15]][[2]][[1]]
   df <- outputList[[15]][[2]][[2]]
   
@@ -496,9 +529,9 @@ if(FALSE){
   lsmeansComparisons <- data.frame(summary(df)[2])
     addLsmeans(doc,lsmeansComparisons, name, colNum(lsmeansComparisons))
   
-  gg0 <- add_plotSigs(lsmeans, lsmeansComparisons, "Session", "2-back correct matches", FALSE)
+  gg0 <- add_plotSigs(lsmeans, lsmeansComparisons, "Test period", "2-back correct matches", FALSE)
   doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
-}
+
   
   
 
@@ -516,7 +549,7 @@ outputList[[16]][[2]]
     gg0 <- add_plotSigs(lsmeans, lsmeansComparisons, "Session", "2-back correct no-matches", FALSE)
     doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
     
-  }
+  
   
   
   name <- outputList[[16]][[2]][[1]]
@@ -542,15 +575,17 @@ outputList[[16]][[2]]
     geom_signif(comparisons = list(c("Caffe", "Place")), annotations=".074" )
   
   doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
-  
+  }
+
+
 outputList[[17]][[1]][[1]]
 doc <- addTitle( doc, outputList[[17]][[1]][[1]], level = 1 )
 outputList[[17]][[2]]
 
 
 
-  name <- outputList[[17]][[2]][[1]][[1]]
-  df <- outputList[[17]][[2]][[1]][[2]]
+  name <- outputList[[17]][[2]][[1]]
+  df <- outputList[[17]][[2]][[2]]
   
   
   
@@ -562,17 +597,19 @@ outputList[[17]][[2]]
   doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
   
   
-  
-  name <- outputList[[17]][[2]][[2]][[1]]
-  df <- outputList[[17]][[2]][[2]][[2]]
-  
-  lsmeans <- data.frame(summary(df)[1])
-  lsmeansComparisons <- data.frame(summary(df)[2])
+  if(FALSE){
+    name <- outputList[[17]][[2]][[2]][[1]]
+    df <- outputList[[17]][[2]][[2]][[2]]
+    
+    lsmeans <- data.frame(summary(df)[1])
+    lsmeansComparisons <- data.frame(summary(df)[2])
     addLsmeans(doc,lsmeansComparisons, name, colNum(lsmeansComparisons))
-  
-  gg0 <- add_plotSigs(lsmeans, lsmeansComparisons, "Test period", "2-back response time", FALSE)
-  doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
-  
+    
+    gg0 <- add_plotSigs(lsmeans, lsmeansComparisons, "Test period", "2-back response time", FALSE)
+    doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+    
+  }
+
 
 
 

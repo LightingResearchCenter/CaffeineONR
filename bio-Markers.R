@@ -135,15 +135,15 @@ Caffeine_Biomarkers4$sample <- as.factor(Caffeine_Biomarkers4$sample)
 ###creat 4 data sets raw or norm * cortisol or melontonin
 
 
-melatonin_raw <- subset(Caffeine_Biomarkers4, Variable == "Melatonin" & dataType == "raw")
+melatonin_raw <- subset(Caffeine_Biomarkers4, Variable == "Melatonin" & dataType == "raw" & !is.na(Subject))
 
-melatonin_norm <- subset(Caffeine_Biomarkers4, Variable == "Melatonin" & dataType == "norm")
+melatonin_norm <- subset(Caffeine_Biomarkers4, Variable == "Melatonin" & dataType == "norm" & !is.na(Subject))
 
-cort_raw <- subset(Caffeine_Biomarkers4, Variable == "Cortisol" & dataType == "raw")
+cort_raw <- subset(Caffeine_Biomarkers4, Variable == "Cortisol" & dataType == "raw" & !is.na(Subject))
 
-cort_norm <- subset(Caffeine_Biomarkers4, Variable == "Cortisol" & dataType == "norm")
+cort_norm <- subset(Caffeine_Biomarkers4, Variable == "Cortisol" & dataType == "norm" & !is.na(Subject))
 
-KSS_norm <- subset(KSS_data4, Variable == "KSS" & dataType == "norm")
+KSS_norm <- subset(KSS_data4, Variable == "KSS" & dataType == "norm" & !is.na(Subject))
 
 
 ###Mixed models, post hoc and graphs
@@ -156,52 +156,53 @@ library(MuMIn)
 library(ReporteRs)
 library(magrittr)
 
-kss_model <- lme(value ~ condition2 * light * sample , random = ~1|Subject/Condition/sample,
+kss_model <- lme(value ~ condition2 * light * sample , random = ~1|Subject/condition2/light/sample,
                            data=KSS_norm)
 
 anova(kss_model)
 
 
 
-melatonin_raw_model <- lme(value ~ condition2 * light * sample , random = ~1|Subject/Condition/sample,
+melatonin_raw_model <- lme(value ~ condition2 * light * sample , random = ~1|Subject/condition2/light/sample,
                      data=melatonin_raw)
 
 anova(melatonin_raw_model)
 
 
 
-melatonin_norm_model <- lme(value ~ condition2 * light * sample , random = ~1|Subject/Condition/sample,
+melatonin_norm_model <- lme(value ~ condition2 * light * sample , random = ~1|Subject/condition2/light/sample,
                            data=melatonin_norm)
 
 melatonin_norm_modelpvals <- anova(melatonin_norm_model)
 
 
 
-melatonin_raw_model <- lme(value ~ condition2 * light * sample , random = ~1|Subject/Condition/sample,
-                           data=melatonin_raw)
-
-anova(melatonin_raw_model)
 
 
-cortisol_norm_model <- lme(value ~ condition2 * light * sample , random = ~1|Subject/Condition/sample,
+
+cortisol_norm_model <- lme(value ~ condition2 * light * sample , random = ~1|Subject/condition2/light/sample,
                             data=cort_norm)
 
 anova(cortisol_norm_model)
 
 
 
-cortisol_raw_model <- lme(value ~ condition2 * light * sample , random = ~1|Subject/Condition/sample,
+cortisol_raw_model <- lme(value ~ condition2 * light * sample , random = ~1|Subject/condition2/light/sample,
                            data=cort_raw)
 
 anova(cortisol_raw_model)
 
 
 
-outputWordAnalysis <- function(mixedmodel, modelData){
+outputWordAnalysis <- function(currTitle, mixedmodel, modelData, doc){
+  textProp <- textProperties()
   
+  
+  library(MuMIn)
+  library(ReporteRs)
+  library(magrittr)
   baseCellProp = cellProperties( padding = 0 )
-  doc = docx()
-  
+  doc = addTitle( doc, currTitle, level = 1 )
   #make word table
   currDF <-  setDT(anova(mixedmodel), keep.rownames = TRUE)[]
   currDF <- currDF[2:length(currDF$p),]
@@ -216,7 +217,10 @@ outputWordAnalysis <- function(mixedmodel, modelData){
   colnames(currDF)[5] <- "p"
   
   
-  currDF$p <-  ifelse(!is.na(currDF$p),ifelse(round(currDF$p, digits = 3) == 1, "1",  substr(as.character(sprintf("%.3f", round(currDF$p, digits = 3))), 2, 5)) )
+  #currDF$p <-  ifelse(!is.na(currDF$p),ifelse(round(currDF$p, digits = 3) == 1, "1",  substr(as.character(sprintf("%.3f", round(currDF$p, digits = 3))), 2, 5)) )
+  
+  
+  currDF$p <- ifelse(round(currDF$p, digits = 3) == 1, "1", ifelse(round(currDF$p, digits = 3) < .05, paste(substr(as.character(sprintf("%.3f", round(currDF$p, digits = 3))), 2, 5), "*", sep = " ") ,substr(as.character(sprintf("%.3f", round(currDF$p, digits = 3))), 2, 5) ) )  
   
   currDF$F <-  ifelse(!is.na(currDF$F), as.character(round(currDF$F, digits = 3)), currDF$F)
   
@@ -227,7 +231,8 @@ outputWordAnalysis <- function(mixedmodel, modelData){
   MyFTable = vanilla.table( data = currDF )
   
   
-  MyFTable[as.numeric(currDF$p) < .05, 5] = chprop( baseCellProp, background.color = "green")
+  #MyFTable[as.numeric(currDF$p) < .05, 5] = chprop( baseCellProp, background.color = "green")
+  MyFTable[as.numeric(substr(currDF$p, 1, 4)) < .05] = chprop( textProp, font.weight = "bold") 
   
   doc = addFlexTable(doc, MyFTable)
   
@@ -269,12 +274,18 @@ outputWordAnalysis <- function(mixedmodel, modelData){
     
     sigFTable2 = vanilla.table( data = lsmeansComparisons )
     sigFTable2[as.numeric(lsmeansComparisons$p) < .05, 4] = chprop( baseCellProp, background.color = "green")
-    doc = addFlexTable(doc, sigFTable2)
+    #doc = addFlexTable(doc, sigFTable2)
     
-    gg0 <- add_plotSigs(lsmeans, lsmeansComparisons2, "condition2", paste( modelData$Variable[1],modelData$dataType[1], sep = " "), TRUE)
+    #gg0 <- add_plotSigs(lsmeans, lsmeansComparisons2, "condition2", paste( modelData$Variable[1],modelData$dataType[1], sep = " "), TRUE)
     
-    doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+    #doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
     
+    
+    
+    
+    #Add t-tests to document
+    newData <- aggregate(value ~ Subject + condition2, data = modelData, FUN = mean)
+    performTtests(newData, doc, "Caffeine", "none")
   }
   
   if('light' %in% sigList){
@@ -309,11 +320,16 @@ outputWordAnalysis <- function(mixedmodel, modelData){
     
     sigFTable2 = vanilla.table( data = lsmeansComparisons )
     sigFTable2[as.numeric(lsmeansComparisons$p) < .05, 4] = chprop( baseCellProp, background.color = "green")
-    doc = addFlexTable(doc, sigFTable2)
+    #doc = addFlexTable(doc, sigFTable2)
     
-    gg0 <- add_plotSigs(lsmeans, lsmeansComparisons2, "light", paste( modelData$Variable[1],modelData$dataType[1], sep = " "), TRUE)
+    #gg0 <- add_plotSigs(lsmeans, lsmeansComparisons2, "light", paste( modelData$Variable[1],modelData$dataType[1], sep = " "), TRUE)
     
-    doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+    #doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+    
+    
+    #Add t-tests to document
+    newData <- aggregate(value ~ Subject + light, data = modelData, FUN = mean)
+    performTtests(newData, doc, "light", "bonferroni")
     
   }
   
@@ -356,11 +372,16 @@ outputWordAnalysis <- function(mixedmodel, modelData){
     
     sigFTable2 = vanilla.table( data = lsmeansComparisons )
     sigFTable2[as.numeric(lsmeansComparisons$p) < .05, 4] = chprop( baseCellProp, background.color = "green")
-    doc = addFlexTable(doc, sigFTable2)
+    #doc = addFlexTable(doc, sigFTable2)
     
-    gg0 <- add_plotSigs(lsmeans, lsmeansComparisons2, "sample", paste( modelData$Variable[1],modelData$dataType[1], sep = " "), FALSE)
+    #gg0 <- add_plotSigs(lsmeans, lsmeansComparisons2, "sample", paste( modelData$Variable[1],modelData$dataType[1], sep = " "), FALSE)
     
-    doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+    #doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+    
+    
+    #Add t-tests to document
+    newData <- aggregate(value ~ Subject + sample, data = modelData, FUN = mean)
+    performTtests(newData, doc, "sample", "bonferroni")
     
   }
   
@@ -396,11 +417,16 @@ outputWordAnalysis <- function(mixedmodel, modelData){
     
     sigFTable2 = vanilla.table( data = lsmeansComparisons )
     sigFTable2[as.numeric(lsmeansComparisons$p) < .05, 4] = chprop( baseCellProp, background.color = "green")
-    doc = addFlexTable(doc, sigFTable2)
+    #doc = addFlexTable(doc, sigFTable2)
     
-    gg0 <- add_plotSigs(lsmeans, lsmeansComparisons2, "Week", paste( modelData$Variable[1],modelData$dataType[1], sep = " "), FALSE)
+    #gg0 <- add_plotSigs(lsmeans, lsmeansComparisons2, "Week", paste( modelData$Variable[1],modelData$dataType[1], sep = " "), FALSE)
     
-    doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+    #doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+    
+    
+    #Add t-tests to document
+    newData <- aggregate(value ~ Subject + Week, data = modelData, FUN = mean)
+    performTtests(newData, doc, "Week", "bonferroni")
     
   }
   
@@ -437,7 +463,7 @@ outputWordAnalysis <- function(mixedmodel, modelData){
     
     sigFTable2 = vanilla.table( data = lsmeansComparisons )
     sigFTable2[as.numeric(lsmeansComparisons$p) < .05, 4] = chprop( baseCellProp, background.color = "green")
-    doc = addFlexTable(doc, sigFTable2)
+    #doc = addFlexTable(doc, sigFTable2)
     
     #gg0 <- add_plotSigs(lsmeans, lsmeansComparisons2, "light:sample", paste( modelData$Variable[1],modelData$dataType[1], sep = " "), FALSE)
     #doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
@@ -445,16 +471,161 @@ outputWordAnalysis <- function(mixedmodel, modelData){
     gg1 <- add_plotSigs(lsmeans, lsmeansComparisons2, "light:sample_line", paste( modelData$Variable[1],modelData$dataType[1], sep = " "), FALSE)
     doc <- addPlot(doc = doc, fun = print, x = gg1, vector.graphic = TRUE, width = 4, height = 3)
     
+    
+    #Add t-tests to document
+    modelData$condition3 <- paste(modelData$light,",", modelData$sample, sep= "")
+    newData <- aggregate(value ~ Subject + condition3, data = modelData, FUN = mean)
+    performTtests(newData, doc, "light:sample", "bonferroni")
+    
+    
   }
-  # write the doc
-  dir <- "//root/projects/Caffeine_ONR_Study/output-MarkdownFiles/results-output/"
-  filename <- paste0(dir,format(Sys.time(), "%Y-%m-%d_%H%M%S_"),paste( modelData$Variable[1],modelData$dataType[1], sep = "_"), "-CaffeineResults.docx")
-  ##post hoc
-  
-  
-  writeDoc( doc, file = filename )
+
   
  }
+
+
+performTtests <- function(Data, doc0, x_str, Correction){
+  
+  removeDim <- TRUE
+  removeRedBluecompare <- TRUE
+  
+ # Correction <- "none"
+  
+  ComparedGroups <- c()
+  df <- c()
+  t <- c()
+  p <- c()
+  
+  colnames(Data)[1] <- "Subject"
+  colnames(Data)[2] <- "condition"
+  if(x_str == "light"){
+    
+    Data$condition <- factor(Data$condition, levels = c("Red" , "Blue", "Dim" ))
+    removeRedBluecompare <- FALSE
+    
+  }
+  #get comparisons
+  testModel<- lme(value ~ condition, random = ~1|Subject,
+                  data=Data)
+  
+  df5 <- lsmeans(testModel, pairwise~ condition, adjust=Correction, data = Data)
+  lsmeansComparisons3 <- data.frame(summary(df5)[2])
+  comparistonList <- strsplit(as.character(lsmeansComparisons3$contrasts.contrast), " - ")
+  ###
+  
+  for(i in 1:length(comparistonList)){
+    orignialData <- Data[Data$condition == comparistonList[[i]][1] | Data$condition == comparistonList[[i]][2] ,]
+    
+    subList001 <- intersect(Data[Data$condition == comparistonList[[i]][1],]$Subject , Data[Data$condition == comparistonList[[i]][2],]$Subject)
+    cleanedData <- orignialData[orignialData$Subject %in% subList001, ]
+    
+    curr_Ttest <- t.test(value ~ condition, data = cleanedData, paired =  TRUE)
+    ComparedGroups <- c(ComparedGroups, paste(comparistonList[[i]][1], comparistonList[[i]][2], sep = " - "  ))
+    df <- c(df, as.numeric(curr_Ttest$parameter))
+    t <- c(t, as.numeric(curr_Ttest$statistic))
+    p <- c(p, curr_Ttest$p.value)
+    
+  }
+  t_test_table <- data.frame(ComparedGroups, df, t, p )
+  t_test_table$p <- as.numeric(as.character(t_test_table$p))
+  
+
+  
+  if(removeDim){
+    
+    t_test_table$number<- str_count(t_test_table$ComparedGroups, "Dim")
+    
+    t_test_table <- subset(t_test_table, number < 2)
+    t_test_table$number <- NULL
+  }
+  
+  
+  if(removeRedBluecompare){
+    
+    t_test_table$Rednumber<- str_count(t_test_table$ComparedGroups, "Red")
+    t_test_table$Bluenumber<- str_count(t_test_table$ComparedGroups, "Blue")
+    t_test_table$RedBluecompare <- ifelse(t_test_table$Rednumber == 1 & t_test_table$Bluenumber == 1, 1, 0)
+    t_test_table <- subset(t_test_table, RedBluecompare == 0)
+    t_test_table$Rednumber <- NULL
+    t_test_table$Bluenumber <- NULL
+    t_test_table$RedBluecompare <- NULL
+    
+  }
+  
+  
+  
+  ###p-value-correction 
+  if(Correction != "None" | Correction != "none"){
+    t_test_table$p <- p.adjust(t_test_table$p, method = Correction, n = length(t_test_table$p) )
+    tableStatement <- paste("P value adjustment: ",Correction, " method for ", length(t_test_table$p), " tests", sep =""  )
+  }else{
+    tableStatement <- "No P-value adjustment applied"
+    
+  }
+  t_test_table2 <- t_test_table
+  
+  t_test_table$t <- as.numeric(as.character(t_test_table$t))
+  t_test_table$p <- ifelse(round(t_test_table$p, digits = 3) == 1, "1", ifelse(round(t_test_table$p, digits = 3) < .05, paste(substr(as.character(sprintf("%.3f", round(t_test_table$p, digits = 3))), 2, 5), "*", sep = " ") ,substr(as.character(sprintf("%.3f", round(t_test_table$p, digits = 3))), 2, 5) ) )
+  
+  t_test_table$t <-  ifelse(!is.na(t_test_table$t), as.character(round(t_test_table$t, digits = 3)), t_test_table$t)
+  
+  
+  
+  
+  textProp <- textProperties()
+  
+  sigFTable2 = vanilla.table( data = t_test_table )
+  sigFTable2[as.numeric(substr(t_test_table$p, 1, 4)) < .05] = chprop( textProp, font.weight = "bold") 
+  
+  
+  doc = addParagraph( doc0, "comparison method: t.test", stylename = "BulletList" )
+  
+  doc0 = addFlexTable(doc0, sigFTable2)
+  
+  doc = addParagraph( doc0, tableStatement, stylename = "Normal" )
+  
+  ##Summarize data and graph
+  
+  summarized_data <- summarySE(measurevar = "value", groupvars = "condition", data = Data)
+  
+  gg <- ggplot(summarized_data, aes(x = condition, y = value))+
+    geom_bar(position=position_dodge(), stat="identity", colour =  "black") +
+    geom_errorbar(aes(ymin=value-se, ymax=value+se),
+                  width=.2,                    
+                  position=position_dodge(.9))+
+    labs(x=x_str) +
+    theme(axis.title.y=element_text(vjust=2), legend.title=element_blank(), legend.position="bottom") +
+    theme(legend.title=element_blank()) +
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))+ 
+    theme(legend.position="none")
+  
+  sig_start <- max(summarized_data$value) 
+  sig_inter <- max(summarized_data$se) + (.5*max(summarized_data$se)) 
+  
+  sig_nifComp <- t_test_table2[t_test_table2$p < .05,]
+  if(length(sig_nifComp$ComparedGroups) > 0){
+    for(i in 1:length(sig_nifComp$ComparedGroups)){
+      comparison_group <- strsplit(as.character(sig_nifComp$ComparedGroups[i]), " - ")[[1]]
+      
+      gg <- gg + geom_signif(comparisons = list(c(comparison_group[1], comparison_group[2])), annotations=substr(as.character(sprintf("%.3f", round(sig_nifComp$p[i], digits = 3))), 2, 5), y_position = sig_start + (i*sig_inter))
+      
+    }
+  }
+  
+  if(x_str == "light"){
+    
+    gg <- gg +  scale_fill_manual(values=c("red4", "deepskyblue4",  "gray80" )) 
+    
+  }
+  if(x_str == "Caffeine"){
+    gg <- gg +  scale_fill_manual(values=c( "gray100",  "gray40")) 
+    
+  }
+  #doc0 = addParagraph( doc0, "Athethmetic means", stylename = "BulletList" )
+  doc0 <- addPlot(doc = doc0, fun = print, x = gg, vector.graphic = TRUE, width = 4, height = 3)
+  
+  
+}
 
 
 add_plotSigs <- function(means, comparisons, x_str, y_str, include_fill){
@@ -612,39 +783,59 @@ add_plotSigs <- function(means, comparisons, x_str, y_str, include_fill){
 
 
 if(FALSE){
-  outputWordAnalysis(melatonin_raw_model, melatonin_raw)
-  outputWordAnalysis(melatonin_norm_model, melatonin_norm)
-  outputWordAnalysis(cortisol_raw_model, cort_raw)
-  outputWordAnalysis(cortisol_norm_model, cort_norm)
-  outputWordAnalysis(kss_model, KSS_norm)
   
+  doc = docx()
+  
+  
+  #outputWordAnalysis("Melatonin", melatonin_raw_model, melatonin_raw, doc)
+  outputWordAnalysis("Melatonin", melatonin_norm_model, melatonin_norm, doc)
+  #outputWordAnalysis(cortisol_raw_model, cort_raw)
+  outputWordAnalysis("Cortisol", cortisol_norm_model, cort_norm, doc)
+  outputWordAnalysis("KSS" ,kss_model, KSS_norm, doc)
+  
+  # write the doc
+  dir <- "//root/projects/Caffeine_ONR_Study/output-MarkdownFiles/results-output/"
+  filename <- paste0(dir,format(Sys.time(), "%Y-%m-%d_%H%M%S_"),"-CaffeineBio-markers-KSS-Results.docx")
+
+  
+  writeDoc( doc, file = filename )
 }
 
 
-subdf <- data.frame(table(Caffeine_Biomarkers$Condition, Caffeine_Biomarkers$Week))
-subdf$Var1 <- factor(subdf$Var1, levels = c("Red/Placebo" , "Red/Caffeine", "Blue/Placebo", "Blue/Caffeine", "Dim/Placebo", "Dim/Caffeine"  ))
-subdf$Var2 <- paste("Week", subdf$Var2 , sep = " ")
-ggplot(subdf,aes(x=Var2,y=Freq,fill=Var1)) + geom_bar(stat="identity",position = "identity", alpha=.3)+
-  scale_fill_manual(values=c( "red4", "red1", "deepskyblue4", "deepskyblue2", "gray80", "gray90")) +
-  theme(axis.title.y=element_text(vjust=2), legend.title=element_blank(), legend.position="bottom") +
-  theme(legend.title=element_blank()) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))
 
-
-  
-ggplot(subdf,aes(x=Var2,y=Freq,fill=Var1)) + geom_bar(stat="identity",position = "dodge")+
-  scale_fill_manual(values=c( "red4", "red1", "deepskyblue4", "deepskyblue2", "gray30", "gray60"))+
-  theme(axis.title.y=element_text(vjust=2), legend.title=element_blank(), legend.position="bottom") +
-  theme(legend.title=element_blank()) +
-  labs(x = '', y = "Number of subjects")+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))
+if(FALSE){
   
 
-ggplot(subdf,aes(x=Var1,y=Freq,fill=Var1)) + geom_bar(stat="identity",position = "dodge")+
-  scale_fill_manual(values=c( "red4", "red1", "deepskyblue4", "deepskyblue2", "gray30", "gray60"))+
-  theme(axis.title.y=element_text(vjust=2), legend.title=element_blank(), legend.position="bottom") +
-  theme(legend.title=element_blank()) +
-  facet_grid(.~ Var2) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),axis.ticks.x=element_blank(), axis.text.x=element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))
-
+  
+  
+  subdf <- data.frame(table(Caffeine_Biomarkers$Condition, Caffeine_Biomarkers$Week))
+  subdf$Var1 <- factor(subdf$Var1, levels = c("Red/Placebo" , "Red/Caffeine", "Blue/Placebo", "Blue/Caffeine", "Dim/Placebo", "Dim/Caffeine"  ))
+  subdf$Var2 <- paste("Week", subdf$Var2 , sep = " ")
+  ggplot(subdf,aes(x=Var2,y=Freq,fill=Var1)) + geom_bar(stat="identity",position = "identity", alpha=.3)+
+    scale_fill_manual(values=c( "red4", "red1", "deepskyblue4", "deepskyblue2", "gray80", "gray90")) +
+    theme(axis.title.y=element_text(vjust=2), legend.title=element_blank(), legend.position="bottom") +
+    theme(legend.title=element_blank()) +
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))
+  
+  
+  
+  ggplot(subdf,aes(x=Var2,y=Freq,fill=Var1)) + geom_bar(stat="identity",position = "dodge")+
+    scale_fill_manual(values=c( "red4", "red1", "deepskyblue4", "deepskyblue2", "gray30", "gray60"))+
+    theme(axis.title.y=element_text(vjust=2), legend.title=element_blank(), legend.position="bottom") +
+    theme(legend.title=element_blank()) +
+    labs(x = '', y = "Number of subjects")+
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))
+  
+  
+  ggplot(subdf,aes(x=Var1,y=Freq,fill=Var1)) + geom_bar(stat="identity",position = "dodge")+
+    scale_fill_manual(values=c( "red4", "red1", "deepskyblue4", "deepskyblue2", "gray30", "gray60"))+
+    theme(axis.title.y=element_text(vjust=2), legend.title=element_blank(), legend.position="bottom") +
+    theme(legend.title=element_blank()) +
+    facet_grid(.~ Var2) +
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),axis.ticks.x=element_blank(), axis.text.x=element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))
+  
+  
+  
+  
+}
 
