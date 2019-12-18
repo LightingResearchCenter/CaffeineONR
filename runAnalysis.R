@@ -1,9 +1,10 @@
 library(readr)
 #source("C:/Users/roohac/Documents/GitHub/CaffeineONR/analysisFunctions.R")
-source("C:/Users/roohac/Documents/GitHub/CaffeineONR/analysisFunctions2.R")
+#source("C:/Users/roohac/Documents/GitHub/CaffeineONR/analysisFunctions2.R")
 source('~/GitHub/CaffeineONR/testOutputWord.R', echo=TRUE)
 
-
+#source('~/GitHub/CaffeineONR/tTestFunctions.R', echo=TRUE)
+source('~/GitHub/CaffeineONR/completeAnalysisFunctions10_8-18.R', echo=TRUE)
 if(FALSE){
   
   
@@ -37,7 +38,7 @@ TB_addedTimeCroppedAddedISI <- read_csv("//root/projects/Caffeine_ONR_Study/perf
 MOB_addedTimeCroppedAddedISI <- read_csv("//root/projects/Caffeine_ONR_Study/performanceTestData/ISI_addedData/MOB_caffieneISIadded.csv")
 
 
-
+###***reported analysis
 GNG_addedTimeCroppedRemovedISI <- read_csv("//root/projects/Caffeine_ONR_Study/performanceTestData/ISI_addedData/GNG_caffieneISIaddedRemovedISI.csv")
 OB_addedTimeCroppedRemovedISI <- read_csv("//root/projects/Caffeine_ONR_Study/performanceTestData/ISI_addedData/OB_caffieneISIaddedRemovedISI.csv")
 TB_addedTimeCroppedRemovedISI <- read_csv("//root/projects/Caffeine_ONR_Study/performanceTestData/ISI_addedData/TB_caffieneISIaddedRemovedISI.csv")
@@ -59,7 +60,7 @@ MOB_isi_removed_Outlier709Removed  <- subset(MOB_addedTimeCroppedRemovedISI, nex
 
 ###Removing special cases
 
-
+####*****Submitted for analysis 10/2/18
 GNG_isi_removed_Cropped2 <- subset(GNG_addedTimeCroppedAddedISI, false_start_after_miss != 1 & fast_rt_after_miss != 1 & Subject_id != "s702" & Subject_id != "s708" & Subject_id != "s711" & uni3 != "s712_Red Light/Placebo" & uni3 != "s714_Blue Light/Caffeine"  )
 OB_isi_removed_Cropped2   <- subset(OB_addedTimeCroppedAddedISI, false_start_after_miss != 1 & fast_rt_after_miss != 1 & Subject_id != "s702" & Subject_id != "s708" & Subject_id != "s711"  & uni3 != "s712_Red Light/Placebo" & uni3 != "s714_Blue Light/Caffeine" )
 TB_isi_removed_Cropped2   <- subset(TB_addedTimeCroppedAddedISI, false_start_after_miss != 1 & fast_rt_after_miss != 1 & Subject_id != "s702" & Subject_id != "s708" & Subject_id != "s711"  & uni3 != "s712_Red Light/Placebo" & uni3 != "s714_Blue Light/Caffeine" )
@@ -87,18 +88,18 @@ options(warn=-1)
 Correction <- "bonferroni"
 Correction <- "none"
 Correction <- "tukey"
-
+OB_isi_removed_Outlier709Removed
 outputList <- Nback_output_mixed_models_caffeine_study_errors(TRUE, OB_isi_removed, TB_isi_removed, MOB_isi_removed, GNG_isi_removed, TRUE, Correction)
 
-
 outputList <- Nback_output_mixed_models_caffeine_study_errors(TRUE, OB_isi_removed_Cropped2, TB_isi_removed_Cropped2, MOB_isi_removed_Cropped2, GNG_isi_removed_Cropped2, TRUE, Correction)
-
 outputList <- Nback_output_mixed_models_caffeine_study_errors(TRUE, OB_isi_removed_Outlier709Removed, TB_isi_removed_Outlier709Removed, MOB_isi_removed_Outlier709Removed, GNG_isi_removed_Outlier709Removed, TRUE, Correction)
 
-
-outputList <- Nback_output_mixed_models_caffeine_study_errors(TRUE, OB_addedTimeCroppedRemovedISI, TB_addedTimeCroppedRemovedISI, MOB_addedTimeCroppedRemovedISI, GNG_addedTimeCroppedRemovedISI, TRUE, Correction)
-
 outputList <- Nback_output_mixed_models_caffeine_study_errors(TRUE, OB_addedTimeCropped, TB_addedTimeCropped, MOB_addedTimeCropped, GNG_addedTimeCropped, TRUE, Correction)
+
+
+
+####Reported analysis
+outputList <- Nback_output_mixed_models_caffeine_study_errors(TRUE, OB_addedTimeCroppedRemovedISI, TB_addedTimeCroppedRemovedISI, MOB_addedTimeCroppedRemovedISI, GNG_addedTimeCroppedRemovedISI, TRUE, Correction)
 
 
 #wordTableGenerator(outputList, FALSE)

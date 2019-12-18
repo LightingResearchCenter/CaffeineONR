@@ -17,14 +17,25 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
   ctrl <- lmeControl(opt='optim');
   options(warn=-1)
   
-  NormalRun <-FALSE
-  N_back10 <- TRUE
+
   
   if(FALSE){
     OB <- subset(OB, session != 1)
     TB <- subset(TB, session != 1)
     MOB <- subset(MOB, session != 1)
     GNG <- subset(GNG, session != 1)
+    
+  }
+  OB$session_testPeriod <- paste(OB$session, OB$test_period, sep = "_")
+  TB$session_testPeriod <- paste(TB$session, TB$test_period, sep = "_")
+  MOB$session_testPeriod <- paste(MOB$session, MOB$test_period, sep = "_")
+  GNG$session_testPeriod <- paste(GNG$session, GNG$test_period, sep = "_")
+  
+  if(TRUE){
+    OB <- subset(OB, session_testPeriod != "1_1")
+    TB <- subset(TB, session_testPeriod != "1_1")
+    MOB <- subset(MOB, session_testPeriod != "1_1")
+    GNG <- subset(GNG, session_testPeriod != "1_1")
     
   }
   ###GNG
@@ -55,7 +66,7 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
   top10log <- tb10Log(gng_rt, "top")
   
   
-  if(NormalRun){
+ 
     hitrate_model <- lme(hit ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                          data=hit_rate)
     
@@ -99,24 +110,24 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
     
     gng_bot10rt_model<- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                             data=bottem10)
-    sigList_output4.1 <- pval_postHoc_OutPut("GNG bottom 10% response time", gng_bot10rt_model, bottem10, post_hoc, doc, "response_time")
+    sigList_output5 <- pval_postHoc_OutPut("GNG bottom 10% response time", gng_bot10rt_model, bottem10, post_hoc, doc, "response_time")
     
     
     gng_top10rt_model<- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                             data=top10)
-    sigList_output4.2 <- pval_postHoc_OutPut("GNG top 10% response time", gng_top10rt_model, top10, post_hoc, doc, "response_time")
+    sigList_output6 <- pval_postHoc_OutPut("GNG top 10% response time", gng_top10rt_model, top10, post_hoc, doc, "response_time")
     
     
     gng_Logbot10rt_model<- lme(log_rt ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                                data=bottem10log)
-    sigList_output4.3 <- pval_postHoc_OutPut("GNG bottom 10% log(response time)", gng_Logbot10rt_model, bottem10log, post_hoc, doc, "log_rt")
+    sigList_output7 <- pval_postHoc_OutPut("GNG bottom 10% log(response time)", gng_Logbot10rt_model, bottem10log, post_hoc, doc, "log_rt")
     
     
     gng_Logtop10rt_model<- lme(log_rt ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                                data=top10log)
-    sigList_output4.4 <- pval_postHoc_OutPut("GNG top 10% log(response time)", gng_Logtop10rt_model, top10log, post_hoc, doc, "log_rt")
+    sigList_output8 <- pval_postHoc_OutPut("GNG top 10% log(response time)", gng_Logtop10rt_model, top10log, post_hoc, doc, "log_rt")
     
-  }
+  
   
   
   ###OB
@@ -150,55 +161,55 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
   bottem10log_OB <- tb10Log(OB2, "bottom")
   top10log_OB <- tb10Log(OB2, "top")
   
-  if(NormalRun){
+
     acc_model1 <- lme(accuracy ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                       data=accuracy_data00)
-    sigList_output5 <- pval_postHoc_OutPut("1-back accuracy", acc_model1, accuracy_data00, post_hoc, doc, "accuracy")
+    sigList_output9 <- pval_postHoc_OutPut("1-back accuracy", acc_model1, accuracy_data00, post_hoc, doc, "accuracy")
     
     
     acc_model2 <- lme(correct_Match ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                       data=accuracy_data01)
-    sigList_output6 <- pval_postHoc_OutPut("1-back correct matches", acc_model2, accuracy_data01, post_hoc, doc, "correct_Match")
+    sigList_output10 <- pval_postHoc_OutPut("1-back correct matches", acc_model2, accuracy_data01, post_hoc, doc, "correct_Match")
     
     
     acc_model3 <- lme(correct_noMatch ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                       data=accuracy_data02)
-    sigList_output7 <- pval_postHoc_OutPut("1-back correct no-match", acc_model3, accuracy_data02, post_hoc, doc, "correct_noMatch")
+    sigList_output11 <- pval_postHoc_OutPut("1-back correct no-match", acc_model3, accuracy_data02, post_hoc, doc, "correct_noMatch")
     
     
     OBrt_model1 <- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                        data=OB2)
-    sigList_output8 <- pval_postHoc_OutPut("1-back respone time", OBrt_model1, OB2, post_hoc, doc, "response_time")
+    sigList_output12 <- pval_postHoc_OutPut("1-back respone time", OBrt_model1, OB2, post_hoc, doc, "response_time")
     
     
     OBrt_model2 <- lme(log_rt ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                        data=OB2)
-    sigList_output9 <- pval_postHoc_OutPut("1-back log(respone time)", OBrt_model2, OB2, post_hoc, doc, "log_rt")
+    sigList_output13 <- pval_postHoc_OutPut("1-back log(respone time)", OBrt_model2, OB2, post_hoc, doc, "log_rt")
     
-  }
+  
  
-  if(N_back10){
+
     OB_bot10rt_model<- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                            data=bottem10_OB)
-    sigList_output1 <- pval_postHoc_OutPut("OB bottom 10% response time", OB_bot10rt_model, bottem10_OB, post_hoc, doc, "response_time")
+    sigList_output14 <- pval_postHoc_OutPut("1-back bottom 10% response time", OB_bot10rt_model, bottem10_OB, post_hoc, doc, "response_time")
     
     
     OB_top10rt_model<- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                            data=top10_OB)
-    sigList_output2 <- pval_postHoc_OutPut("OB top 10% response time", OB_top10rt_model, top10_OB, post_hoc, doc, "response_time")
+    sigList_output15 <- pval_postHoc_OutPut("1-back top 10% response time", OB_top10rt_model, top10_OB, post_hoc, doc, "response_time")
     
     
     OB_Logbot10rt_model<- lme(log_rt ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                               data=bottem10log_OB)
-    sigList_output3 <- pval_postHoc_OutPut("OB bottom 10% log(response time)", OB_Logbot10rt_model, bottem10log_OB, post_hoc, doc, "log_rt")
+    sigList_output16 <- pval_postHoc_OutPut("1-back bottom 10% log(response time)", OB_Logbot10rt_model, bottem10log_OB, post_hoc, doc, "log_rt")
     
     
     OB_Logtop10rt_model<- lme(log_rt ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                               data=top10log_OB)
-    sigList_output4 <- pval_postHoc_OutPut("OB top 10% log(response time)", OB_Logtop10rt_model, top10log_OB, post_hoc, doc, "log_rt")
+    sigList_output17 <- pval_postHoc_OutPut("1-back top 10% log(response time)", OB_Logtop10rt_model, top10log_OB, post_hoc, doc, "log_rt")
     
     
-  }
+  
  
   
   #TB
@@ -233,57 +244,56 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
   bottem10log_TB <- tb10Log(TB2, "bottom")
   top10log_TB <- tb10Log(TB2, "top")
   
-  if(NormalRun){
+
     acc_model4 <- lme(accuracy ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                       data=accuracy_data03)
-    sigList_output10 <- pval_postHoc_OutPut("2-back accuracy", acc_model4, accuracy_data03, post_hoc, doc, "accuracy")
+    sigList_output18 <- pval_postHoc_OutPut("2-back accuracy", acc_model4, accuracy_data03, post_hoc, doc, "accuracy")
     
     
     acc_model5 <- lme(correct_Match ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                       data=accuracy_data04)
-    sigList_output11 <- pval_postHoc_OutPut("2-back correct matches", acc_model5, accuracy_data04, post_hoc, doc, "correct_Match")
+    sigList_output19 <- pval_postHoc_OutPut("2-back correct matches", acc_model5, accuracy_data04, post_hoc, doc, "correct_Match")
     
     
     acc_model6 <- lme(correct_noMatch ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                       data=accuracy_data05)
-    sigList_output12 <- pval_postHoc_OutPut("2-back correct no-matches", acc_model6, accuracy_data05, post_hoc, doc, "correct_noMatch")
+    sigList_output20 <- pval_postHoc_OutPut("2-back correct no-matches", acc_model6, accuracy_data05, post_hoc, doc, "correct_noMatch")
     
     
     TBrt_model1 <- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                        data=TB2)
-    sigList_output13 <- pval_postHoc_OutPut("2-back response time", TBrt_model1, TB2, post_hoc, doc, "response_time")
+    sigList_output21 <- pval_postHoc_OutPut("2-back response time", TBrt_model1, TB2, post_hoc, doc, "response_time")
     
     
     TBrt_model2 <- lme(log_rt ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                        data=TB2)
-    sigList_output14 <- pval_postHoc_OutPut("2-back log(response time)", TBrt_model2, TB2, post_hoc, doc, "log_rt")
+    sigList_output22 <- pval_postHoc_OutPut("2-back log(response time)", TBrt_model2, TB2, post_hoc, doc, "log_rt")
     
-  }
- 
-  if(N_back10){
+  
+
     TB_bot10rt_model<- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                            data=bottem10_TB)
-    sigList_output5 <- pval_postHoc_OutPut("TB bottom 10% response time", TB_bot10rt_model, bottem10_TB, post_hoc, doc, "response_time")
+    sigList_output23 <- pval_postHoc_OutPut("2-back bottom 10% response time", TB_bot10rt_model, bottem10_TB, post_hoc, doc, "response_time")
     
     
     TB_top10rt_model<- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                            data=top10_TB)
-    sigList_output6 <- pval_postHoc_OutPut("TB top 10% response time", TB_top10rt_model, top10_TB, post_hoc, doc, "response_time")
+    sigList_output24 <- pval_postHoc_OutPut("2-back top 10% response time", TB_top10rt_model, top10_TB, post_hoc, doc, "response_time")
     
     
     TB_Logbot10rt_model<- lme(log_rt ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                               data=bottem10log_TB)
-    sigList_output7 <- pval_postHoc_OutPut("TB bottom 10% log(response time)", TB_Logbot10rt_model, bottem10log_TB, post_hoc, doc, "log_rt")
+    sigList_output25 <- pval_postHoc_OutPut("2-back bottom 10% log(response time)", TB_Logbot10rt_model, bottem10log_TB, post_hoc, doc, "log_rt")
     
     
     TB_Logtop10rt_model<- lme(log_rt ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                               data=top10log_TB)
-    sigList_output8 <- pval_postHoc_OutPut("TB top 10% log(response time)", TB_Logtop10rt_model, top10log_TB, post_hoc, doc, "log_rt")
+    sigList_output26 <- pval_postHoc_OutPut("2-back top 10% log(response time)", TB_Logtop10rt_model, top10log_TB, post_hoc, doc, "log_rt")
     
     
     
 
-  }
+  
   ###MOB
   MOB$Subject_id <- as.factor(MOB$Subject_id)
   MOB$condition <- as.factor(MOB$condition)
@@ -314,57 +324,57 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
   bottem10log_MOB <- tb10Log(MOB2, "bottom")
   top10log_MOB <- tb10Log(MOB2, "top")
   
-  if(NormalRun){
+
     acc_model7 <- lme(accuracy ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                       data=accuracy_data06, control=ctrl)
-    sigList_output15 <- pval_postHoc_OutPut("MOB 1-back accuracy", acc_model7, accuracy_data06, post_hoc, doc, "accuracy")
+    sigList_output27 <- pval_postHoc_OutPut("MOB 1-back accuracy", acc_model7, accuracy_data06, post_hoc, doc, "accuracy")
     
     
     acc_model8 <- lme(correct_Match ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                       data=accuracy_data07)
-    sigList_output16 <- pval_postHoc_OutPut("MOB 1-back correct matches", acc_model8, accuracy_data07, post_hoc, doc, "correct_Match")
+    sigList_output28 <- pval_postHoc_OutPut("MOB 1-back correct matches", acc_model8, accuracy_data07, post_hoc, doc, "correct_Match")
     
     
     acc_model9 <- lme(correct_noMatch ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                       data=accuracy_data08)
-    sigList_output17 <- pval_postHoc_OutPut("MOB 1-back correct no-matches", acc_model9, accuracy_data08, post_hoc, doc, "correct_noMatch")
+    sigList_output29 <- pval_postHoc_OutPut("MOB 1-back correct no-matches", acc_model9, accuracy_data08, post_hoc, doc, "correct_noMatch")
     
     
     MOBrt_model1 <- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                         data=MOB2)
-    sigList_output18 <- pval_postHoc_OutPut("MOB 1-back response time", MOBrt_model1, MOB2, post_hoc, doc, "response_time")
+    sigList_output30 <- pval_postHoc_OutPut("MOB 1-back response time", MOBrt_model1, MOB2, post_hoc, doc, "response_time")
     
     
     MOBrt_model2 <- lme(log_rt ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                         data=MOB2)
-    sigList_output19 <- pval_postHoc_OutPut("MOB 1-back log(response time)", MOBrt_model2, MOB2, post_hoc, doc, "log_rt")
+    sigList_output31 <- pval_postHoc_OutPut("MOB 1-back log(response time)", MOBrt_model2, MOB2, post_hoc, doc, "log_rt")
     
-  }
+
 
   
-  if(N_back10){
+
     MOB_bot10rt_model<- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                             data=bottem10_MOB)
-    sigList_output9 <- pval_postHoc_OutPut("MOB bottom 10% response time", MOB_bot10rt_model, bottem10_MOB, post_hoc, doc, "response_time")
+    sigList_output32 <- pval_postHoc_OutPut("MOB 1-back bottom 10% response time", MOB_bot10rt_model, bottem10_MOB, post_hoc, doc, "response_time")
     
     
     MOB_top10rt_model<- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                             data=top10_MOB)
-    sigList_output10 <- pval_postHoc_OutPut("MOB top 10% response time", MOB_top10rt_model, top10_MOB, post_hoc, doc, "response_time")
+    sigList_output33 <- pval_postHoc_OutPut("MOB 1-back top 10% response time", MOB_top10rt_model, top10_MOB, post_hoc, doc, "response_time")
     
     
     MOB_Logbot10rt_model<- lme(log_rt ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                                data=bottem10log_MOB)
-    sigList_output11 <- pval_postHoc_OutPut("MOB bottom 10% log(response time)", MOB_Logbot10rt_model, bottem10log_MOB, post_hoc, doc, "log_rt")
+    sigList_output34 <- pval_postHoc_OutPut("MOB 1-back bottom 10% log(response time)", MOB_Logbot10rt_model, bottem10log_MOB, post_hoc, doc, "log_rt")
     
     
     MOB_Logtop10rt_model<- lme(log_rt ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                                data=top10log_MOB)
-    sigList_output12 <- pval_postHoc_OutPut("MOB top 10% log(response time)", MOB_Logtop10rt_model, top10log_MOB, post_hoc, doc, "log_rt")
+    sigList_output35 <- pval_postHoc_OutPut("MOB 1-back top 10% log(response time)", MOB_Logtop10rt_model, top10log_MOB, post_hoc, doc, "log_rt")
     
     
     
-  }
+  
   
   
   
@@ -386,16 +396,14 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
     writeDoc( doc, file = filename )
   }
 
-  if(NormalRun){
-    output_list1 <- list(sigList_output1, sigList_output2, sigList_output3,  sigList_output4, sigList_output4.1, sigList_output4.2, sigList_output4.3, sigList_output4.4,  sigList_output5, sigList_output6, sigList_output7, sigList_output8, sigList_output9, sigList_output10,
-                         sigList_output11, sigList_output12, sigList_output13, sigList_output14, sigList_output15, sigList_output16, sigList_output17, sigList_output18, sigList_output19)
-    
-  }
-   if(N_back10){
-     output_list1 <- list(sigList_output1, sigList_output2, sigList_output3,  sigList_output4, sigList_output5, sigList_output6, sigList_output7, sigList_output8, sigList_output9, sigList_output10,
-                          sigList_output11, sigList_output12)
+
+  
+  output_list1 <- list(sigList_output1, sigList_output2, sigList_output3,  sigList_output4, sigList_output5, sigList_output6, sigList_output7, sigList_output8, sigList_output9, sigList_output10,
+                          sigList_output11, sigList_output12, sigList_output13, sigList_output14, sigList_output15, sigList_output16, sigList_output17, sigList_output18, sigList_output19, sigList_output20,
+                       sigList_output21, sigList_output22, sigList_output23, sigList_output24, sigList_output25, sigList_output26, sigList_output27, sigList_output28, sigList_output29, sigList_output30, 
+                       sigList_output31, sigList_output32, sigList_output33, sigList_output34, sigList_output35)
      
-   }
+  
   return(output_list1)
 }
 tb10Log <- function(gngRt, side){
@@ -659,11 +667,19 @@ addLsmeans <- function(doc0, lsmeansComparisons, name, numCols){
   
 }
 
-performTtests <- function(Data, doc0, x_str, outcomemeasureTitle){
+performTtests <- function(Data, doc0, x_str, outcomemeasureTitle, plannedCompare){
   
-
+  if(missing(plannedCompare)) {
+    plannedCompare <- FALSE
+  }
   #performTtests(newData, doc, "Caffeine:Light")
   
+  if(x_str == "Period"){
+    correction <- TRUE
+  }else{
+    correction <- FALSE
+    
+  }
   
   ComparedGroups <- c()
   df <- c()
@@ -685,7 +701,10 @@ performTtests <- function(Data, doc0, x_str, outcomemeasureTitle){
   lsmeansComparisons3 <- data.frame(summary(df5)[2])
   comparistonList <- strsplit(as.character(lsmeansComparisons3$contrasts.contrast), " - ")
   ###
-  
+  if(plannedCompare){
+    comparistonList <- comparistonList[-c(3,4,5,6,8,9, 12, 13)] 
+    comparistonList <- comparistonList[c(7,1,4, 6,3,5,2)] 
+  }
   for(i in 1:length(comparistonList)){
     orignialData <- Data[Data$condition == comparistonList[[i]][1] | Data$condition == comparistonList[[i]][2] ,]
     
@@ -701,9 +720,14 @@ performTtests <- function(Data, doc0, x_str, outcomemeasureTitle){
   }
   t_test_table <- data.frame(ComparedGroups, df, t, p )
   t_test_table$p <- as.numeric(as.character(t_test_table$p))
-  t_test_table2 <- t_test_table
   ###add p-value-correction here
   ###
+  if(correction){
+    t_test_table$p <- p.adjust(as.character(t_test_table$p), method = "bonferroni", 3)
+    
+  }
+  t_test_table2 <- t_test_table
+  
   t_test_table$t <- as.numeric(as.character(t_test_table$t))
   t_test_table$p <- ifelse(round(t_test_table$p, digits = 3) == 1, "1", ifelse(round(t_test_table$p, digits = 3) < .05, paste(substr(as.character(sprintf("%.3f", round(t_test_table$p, digits = 3))), 2, 5), "*", sep = " ") ,substr(as.character(sprintf("%.3f", round(t_test_table$p, digits = 3))), 2, 5) ) )
   
@@ -742,7 +766,13 @@ performTtests <- function(Data, doc0, x_str, outcomemeasureTitle){
   
   filename003 <- paste(filename001, filename002, sep = "")
   
-  write.csv(summarized_data, filename003, row.names = FALSE)
+  if(plannedCompare){
+    write.csv(summarized_data[c(5,6,1,2,3,4),],filename003, row.names = FALSE)
+    
+  }else{
+    write.csv(summarized_data, filename003, row.names = FALSE)
+    
+  }
   
   gg <- ggplot(summarized_data, aes(x = condition, y = value))+
     geom_bar(position=position_dodge(), stat="identity", colour =  "black") +
@@ -816,8 +846,19 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
   model_r2 <- r.squaredGLMM(nlme_model)
   
   modelPvals <- data.frame(anova(nlme_model))
-  sigList <- rownames(modelPvals[modelPvals$p.value < .06,])
+  sigList <- rownames(modelPvals[modelPvals$p.value < .05,])
   sigList_output <- list(outcomemeasureTitle,model_r2, modelPvals)
+  
+  plannedComparisions1 <- TRUE
+  
+  if(plannedComparisions1){
+    sigList <- c('condition2:light')
+    plannedCompare <- TRUE
+  }else{
+    plannedCompare <- FALSE
+    
+  }
+  
   if(post_hoc){
     post_hoc_list <- list()
     
@@ -832,15 +873,7 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
       sigList_output2 <- list('condition2', lsmeans(nlme_model, pairwise~ condition2, adjust=Correction, data = modelData))    
       
       
-      df <- lsmeans(nlme_model, pairwise~ condition2, adjust=Correction, data = modelData)
-      
-      lsmeans <- data.frame(summary(df)[1])
-      lsmeansComparisons <- data.frame(summary(df)[2])
-      addLsmeans(doc,lsmeansComparisons, "Caffeine", colNum(lsmeansComparisons))
-      
-      gg0 <- add_plotSigs(lsmeans, lsmeansComparisons, "Caffeine", outcomemeasureTitle, FALSE)
-      doc = addParagraph( doc, "Estimated maginal means: lsmeans", stylename = "BulletList" )
-      doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+
       
       #Add t-tests to document
       newData <- aggregate(value ~ Subject_id + condition2, data = modelData, FUN = mean)
@@ -859,16 +892,7 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
       sigList_output2 <- list('light', lsmeans(nlme_model, pairwise~ light, adjust=Correction, data = modelData))   
       
       
-      df <-  lsmeans(nlme_model, pairwise~ light, adjust=Correction, data = modelData)
-      
-      lsmeans <- data.frame(summary(df)[1])
-      lsmeansComparisons <- data.frame(summary(df)[2])
-      addLsmeans(doc,lsmeansComparisons, "Light", colNum(lsmeansComparisons))
-      
-      gg0 <- add_plotSigs(lsmeans, lsmeansComparisons, "Light", outcomemeasureTitle, FALSE)
-      doc = addParagraph( doc, "Estimated maginal means: lsmeans", stylename = "BulletList" )
-      
-      doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+
       
       #Add t-tests to document
       newData <- aggregate(value ~ Subject_id + light, data = modelData, FUN = mean)
@@ -887,15 +911,7 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
       sigList_output2 <- list('test_period', lsmeans(nlme_model, pairwise~ test_period, adjust=Correction, data = modelData))  
       
       
-      df <-  lsmeans(nlme_model, pairwise~ test_period, adjust=Correction, data = modelData)
-      
-      lsmeans <- data.frame(summary(df)[1])
-      lsmeansComparisons <- data.frame(summary(df)[2])
-      addLsmeans(doc,lsmeansComparisons, "Period", colNum(lsmeansComparisons))
-      
-      gg0 <- add_plotSigs(lsmeans, lsmeansComparisons, "Period", outcomemeasureTitle, FALSE)
-      doc = addParagraph( doc, "Estimated maginal means: lsmeans", stylename = "BulletList" )
-      doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+
       
       #Add t-tests to document
       newData <- aggregate(value ~ Subject_id + test_period, data = modelData, FUN = mean)
@@ -927,31 +943,14 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
       
      
       
-      df <-  lsmeans(nlme_model, pairwise~ condition2:light, adjust=Correction, data = modelData)
-      
-      lsmeans <- data.frame(summary(df)[1])
-      lsmeansComparisons <- data.frame(summary(df)[2])
-      addLsmeans(doc,lsmeansComparisons, "Caffeine:Light", colNum(lsmeansComparisons))
-      
-      gg0 <- ggplot(lsmeans, aes(x = lsmeans.condition2, y = lsmeans.lsmean, fill = lsmeans.light))+
-        geom_bar(position=position_dodge(), stat="identity", colour =  "black") +
-        geom_errorbar(aes(ymin=lsmeans.lsmean-lsmeans.SE, ymax=lsmeans.lsmean+lsmeans.SE),
-                      width=.2,                    
-                      position=position_dodge(.9))+
-        theme(axis.title.y=element_text(vjust=2), legend.title=element_blank(), legend.position="bottom") +
-        theme(legend.title=element_blank()) +
-        theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))+ 
-        theme(legend.position="none") +
-        scale_fill_manual(values=c("red4", "deepskyblue4",  "gray80" ))+
-        labs(x="Caffeine" , y = outcomemeasureTitle) 
-      doc = addParagraph( doc, "Estimated maginal means: lsmeans", stylename = "BulletList" )
-      doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
-      
       
       #Add t-tests to document
       modelData$condition3 <- paste(modelData$light,",", modelData$condition2, sep= "")
       newData <- aggregate(value ~ Subject_id + condition3, data = modelData, FUN = mean)
-      performTtests(newData, doc, "Caffeine:Light", outcomemeasureTitle)
+      performTtests(newData, doc, "Caffeine:Light", outcomemeasureTitle, plannedCompare)
+      
+      
+      
         
         
       
@@ -970,27 +969,7 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
  
       sigList_output2 <- list('condition2:test_period', lsmeans(nlme_model, pairwise~ condition2:test_period, adjust=Correction, data = modelData))    
       
-      
-      df <- lsmeans(nlme_model, pairwise~ condition2:test_period, adjust=Correction, data = modelData)
-      
-      lsmeans <- data.frame(summary(df)[1])
-      lsmeansComparisons <- data.frame(summary(df)[2])
-      addLsmeans(doc,lsmeansComparisons, "Caffeine:Period", colNum(lsmeansComparisons))
-      
-      gg0 <- ggplot(lsmeans, aes(x = lsmeans.test_period, y = lsmeans.lsmean, fill = lsmeans.condition2))+
-        geom_bar(position=position_dodge(), stat="identity", colour =  "black") +
-        geom_errorbar(aes(ymin=lsmeans.lsmean-lsmeans.SE, ymax=lsmeans.lsmean+lsmeans.SE),
-                      width=.2,                    
-                      position=position_dodge(.9))+
-        theme(axis.title.y=element_text(vjust=2), legend.title=element_blank(), legend.position="bottom") +
-        theme(legend.title=element_blank()) +
-        theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))+ 
-        #theme(legend.position="none") +
-        scale_fill_manual(values=c("white",  "gray80" ))+
-        labs(x="Period" , y = outcomemeasureTitle) 
-      
-      doc = addParagraph( doc, "Estimated maginal means: lsmeans", stylename = "BulletList" )
-      doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
+
       
       modelData$condition2_test_period <- paste(modelData$condition2,",", modelData$test_period, sep= "")
       newData <- aggregate(value ~ Subject_id + condition2_test_period, data = modelData, FUN = mean)
@@ -1009,27 +988,7 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
     if('light:test_period' %in% sigList){
       sigList_output2 <- list('light:test_period', lsmeans(nlme_model, pairwise~ light:test_period, adjust=Correction, data = modelData))    
      
-      df <- lsmeans(nlme_model, pairwise~ light:test_period, adjust=Correction, data = modelData)
-      
-      lsmeans <- data.frame(summary(df)[1])
-      lsmeansComparisons <- data.frame(summary(df)[2])
-      addLsmeans(doc,lsmeansComparisons, "light:test_period", colNum(lsmeansComparisons))
-      
-      gg0 <- ggplot(lsmeans, aes(x = lsmeans.test_period, y = lsmeans.lsmean, fill = lsmeans.light))+
-        geom_bar(position=position_dodge(), stat="identity", colour =  "black") +
-        geom_errorbar(aes(ymin=lsmeans.lsmean-lsmeans.SE, ymax=lsmeans.lsmean+lsmeans.SE),
-                      width=.2,                    
-                      position=position_dodge(.9))+
-        theme(axis.title.y=element_text(vjust=2), legend.title=element_blank(), legend.position="bottom") +
-        theme(legend.title=element_blank()) +
-        theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))+ 
-        #theme(legend.position="none") +
-        scale_fill_manual(values=c("red4", "deepskyblue4",  "gray80" ))+
-        labs(x="Period" , y = outcomemeasureTitle) 
-      
-      doc = addParagraph( doc, "Estimated maginal means: lsmeans", stylename = "BulletList" )
-      doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
-      
+
       
       modelData$light_test_period <- paste(modelData$light,",", modelData$test_period, sep= "")
       newData <- aggregate(value ~ Subject_id + light_test_period, data = modelData, FUN = mean)
@@ -1048,11 +1007,11 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
     if('condition2:light:test_period' %in% sigList){
       sigList_output2 <- list('condition2:light:test_period', lsmeans(nlme_model, pairwise~ condition2:light:test_period, adjust=Correction, data = modelData))    
       
-      df <- lsmeans(nlme_model, pairwise~ condition2:light:test_period, adjust=Correction, data = modelData)
+      #df <- lsmeans(nlme_model, pairwise~ condition2:light:test_period, adjust=Correction, data = modelData)
       
-      lsmeans <- data.frame(summary(df)[1])
-      lsmeansComparisons <- data.frame(summary(df)[2])
-      addLsmeans(doc,lsmeansComparisons, "condition2:light:test_period", colNum(lsmeansComparisons))
+      #lsmeans <- data.frame(summary(df)[1])
+      #lsmeansComparisons <- data.frame(summary(df)[2])
+      #addLsmeans(doc,lsmeansComparisons, "condition2:light:test_period", colNum(lsmeansComparisons))
       
       
       modelData$condition_test_period <- paste(modelData$condition,",", modelData$test_period, sep= "")

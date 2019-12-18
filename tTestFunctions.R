@@ -1,6 +1,8 @@
 
 
 
+
+
 Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, GNG, post_hoc, doc, Correction){
   
   library(nlme)
@@ -17,8 +19,8 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
   ctrl <- lmeControl(opt='optim');
   options(warn=-1)
   
-  NormalRun <-FALSE
-  N_back10 <- TRUE
+  NormalRun <-TRUE
+  N_back10 <- FALSE
   
   if(FALSE){
     OB <- subset(OB, session != 1)
@@ -44,7 +46,7 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
   
   go_only$hit <- ifelse(go_only$response_detail == "CORRECT MATCH", 1, 0)
   no_only$fp <- ifelse(no_only$response_detail == "FALSE-POSITIVE", 1, 0)
-
+  
   hit_rate <- aggregate(hit ~ Subject_id + condition2 + light + test_period  + condition, data = go_only, FUN= mean)
   fp_rate <- aggregate(fp ~ Subject_id + condition2 + light + test_period  + condition, data = no_only, FUN= mean)
   
@@ -176,7 +178,7 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
     sigList_output9 <- pval_postHoc_OutPut("1-back log(respone time)", OBrt_model2, OB2, post_hoc, doc, "log_rt")
     
   }
- 
+  
   if(N_back10){
     OB_bot10rt_model<- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                            data=bottem10_OB)
@@ -199,7 +201,7 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
     
     
   }
- 
+  
   
   #TB
   
@@ -259,7 +261,7 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
     sigList_output14 <- pval_postHoc_OutPut("2-back log(response time)", TBrt_model2, TB2, post_hoc, doc, "log_rt")
     
   }
- 
+  
   if(N_back10){
     TB_bot10rt_model<- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
                            data=bottem10_TB)
@@ -282,7 +284,7 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
     
     
     
-
+    
   }
   ###MOB
   MOB$Subject_id <- as.factor(MOB$Subject_id)
@@ -340,7 +342,7 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
     sigList_output19 <- pval_postHoc_OutPut("MOB 1-back log(response time)", MOBrt_model2, MOB2, post_hoc, doc, "log_rt")
     
   }
-
+  
   
   if(N_back10){
     MOB_bot10rt_model<- lme(response_time ~ condition2 * light * test_period , random = ~1|Subject_id/condition2/light/test_period,
@@ -385,22 +387,22 @@ Nback_output_mixed_models_caffeine_study_errors <- function(Save, OB, TB, MOB, G
     
     writeDoc( doc, file = filename )
   }
-
+  
   if(NormalRun){
     output_list1 <- list(sigList_output1, sigList_output2, sigList_output3,  sigList_output4, sigList_output4.1, sigList_output4.2, sigList_output4.3, sigList_output4.4,  sigList_output5, sigList_output6, sigList_output7, sigList_output8, sigList_output9, sigList_output10,
                          sigList_output11, sigList_output12, sigList_output13, sigList_output14, sigList_output15, sigList_output16, sigList_output17, sigList_output18, sigList_output19)
     
   }
-   if(N_back10){
-     output_list1 <- list(sigList_output1, sigList_output2, sigList_output3,  sigList_output4, sigList_output5, sigList_output6, sigList_output7, sigList_output8, sigList_output9, sigList_output10,
-                          sigList_output11, sigList_output12)
-     
-   }
+  if(N_back10){
+    output_list1 <- list(sigList_output1, sigList_output2, sigList_output3,  sigList_output4, sigList_output5, sigList_output6, sigList_output7, sigList_output8, sigList_output9, sigList_output10,
+                         sigList_output11, sigList_output12)
+    
+  }
   return(output_list1)
 }
 tb10Log <- function(gngRt, side){
   
-  
+
   gngRt$uniID01 <- paste(gngRt$Subject_id, gngRt$condition, gngRt$test_period, sep = "_")
   uniID01_list <- unique(gngRt$uniID01)
   
@@ -485,6 +487,8 @@ tb10 <- function(gngRt, side){
   
   return(tb)
 }
+
+
 add_plotSigs <- function(means, comparisons, x_str, y_str, include_fill){
   
   if(x_str == "Light"){
@@ -685,6 +689,8 @@ performTtests <- function(Data, doc0, x_str, outcomemeasureTitle){
   lsmeansComparisons3 <- data.frame(summary(df5)[2])
   comparistonList <- strsplit(as.character(lsmeansComparisons3$contrasts.contrast), " - ")
   ###
+  comparistonList <- comparistonList[-c(3,4,5,6,8,9, 12, 13)] 
+  comparistonList <- comparistonList[c(7,1,4, 6,3,5,2)] 
   
   for(i in 1:length(comparistonList)){
     orignialData <- Data[Data$condition == comparistonList[[i]][1] | Data$condition == comparistonList[[i]][2] ,]
@@ -709,7 +715,7 @@ performTtests <- function(Data, doc0, x_str, outcomemeasureTitle){
   
   t_test_table$t <-  ifelse(!is.na(t_test_table$t), as.character(round(t_test_table$t, digits = 3)), t_test_table$t)
   
-  removeDim <- TRUE
+  removeDim <- FALSE
   if(removeDim){
     
     t_test_table$number<- str_count(t_test_table$ComparedGroups, "Dim")
@@ -733,8 +739,7 @@ performTtests <- function(Data, doc0, x_str, outcomemeasureTitle){
   ##Summarize data and graph
   
   summarized_data <- summarySE(measurevar = "value", groupvars = "condition", data = Data)
-  summarized_data <- summarySE(measurevar = "value", groupvars = "condition", data = Data)
-  filename001 <- "C:/Users/roohac/Desktop/CaffeineTemp/sigTABLES/"
+  filename001 <- "C:/Users/roohac/Desktop/CaffeineTemp/TABLES/"
   
   filename002 <- paste(outcomemeasureTitle,"--", x_str, ".csv", sep = "")
   filename002 <- gsub(":", "X", filename002)
@@ -742,8 +747,7 @@ performTtests <- function(Data, doc0, x_str, outcomemeasureTitle){
   
   filename003 <- paste(filename001, filename002, sep = "")
   
-  write.csv(summarized_data, filename003, row.names = FALSE)
-  
+  write.csv(summarized_data[c(5,6,1,2,3,4),],filename003, row.names = FALSE)
   gg <- ggplot(summarized_data, aes(x = condition, y = value))+
     geom_bar(position=position_dodge(), stat="identity", colour =  "black") +
     geom_errorbar(aes(ymin=value-se, ymax=value+se),
@@ -818,6 +822,12 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
   modelPvals <- data.frame(anova(nlme_model))
   sigList <- rownames(modelPvals[modelPvals$p.value < .06,])
   sigList_output <- list(outcomemeasureTitle,model_r2, modelPvals)
+  
+  plannedComparisions1 <- TRUE
+  if(plannedComparisions1){
+    sigList <- c('condition2:light')
+    
+  }
   if(post_hoc){
     post_hoc_list <- list()
     
@@ -872,7 +882,7 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
       
       #Add t-tests to document
       newData <- aggregate(value ~ Subject_id + light, data = modelData, FUN = mean)
-      performTtests(newData, doc, "Light", outcomemeasureTitle)
+      performTtests(newData, doc, "Light")
       
       if(length(post_hoc_list) > 0){
         post_hoc_list <- list(post_hoc_list, sigList_output2)
@@ -899,7 +909,7 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
       
       #Add t-tests to document
       newData <- aggregate(value ~ Subject_id + test_period, data = modelData, FUN = mean)
-      performTtests(newData, doc, "Period", outcomemeasureTitle)
+      performTtests(newData, doc, "Period")
       
       
       if(length(post_hoc_list) > 0){
@@ -926,27 +936,6 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
       sigList_output2 <- list('condition2:light', lsmeans(nlme_model, pairwise~ condition2:light, adjust=Correction, data = modelData))    
       
      
-      
-      df <-  lsmeans(nlme_model, pairwise~ condition2:light, adjust=Correction, data = modelData)
-      
-      lsmeans <- data.frame(summary(df)[1])
-      lsmeansComparisons <- data.frame(summary(df)[2])
-      addLsmeans(doc,lsmeansComparisons, "Caffeine:Light", colNum(lsmeansComparisons))
-      
-      gg0 <- ggplot(lsmeans, aes(x = lsmeans.condition2, y = lsmeans.lsmean, fill = lsmeans.light))+
-        geom_bar(position=position_dodge(), stat="identity", colour =  "black") +
-        geom_errorbar(aes(ymin=lsmeans.lsmean-lsmeans.SE, ymax=lsmeans.lsmean+lsmeans.SE),
-                      width=.2,                    
-                      position=position_dodge(.9))+
-        theme(axis.title.y=element_text(vjust=2), legend.title=element_blank(), legend.position="bottom") +
-        theme(legend.title=element_blank()) +
-        theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))+ 
-        theme(legend.position="none") +
-        scale_fill_manual(values=c("red4", "deepskyblue4",  "gray80" ))+
-        labs(x="Caffeine" , y = outcomemeasureTitle) 
-      doc = addParagraph( doc, "Estimated maginal means: lsmeans", stylename = "BulletList" )
-      doc <- addPlot(doc = doc, fun = print, x = gg0, vector.graphic = TRUE, width = 4, height = 3)
-      
       
       #Add t-tests to document
       modelData$condition3 <- paste(modelData$light,",", modelData$condition2, sep= "")
@@ -994,7 +983,7 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
       
       modelData$condition2_test_period <- paste(modelData$condition2,",", modelData$test_period, sep= "")
       newData <- aggregate(value ~ Subject_id + condition2_test_period, data = modelData, FUN = mean)
-      performTtests(newData, doc, "Caffeine:Period", outcomemeasureTitle)
+      performTtests(newData, doc, "Caffeine:Period")
       
       
       if(length(post_hoc_list) > 0){
@@ -1033,7 +1022,7 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
       
       modelData$light_test_period <- paste(modelData$light,",", modelData$test_period, sep= "")
       newData <- aggregate(value ~ Subject_id + light_test_period, data = modelData, FUN = mean)
-      performTtests(newData, doc, "light:test_period", outcomemeasureTitle)
+      performTtests(newData, doc, "light:test_period")
       
       
        if(length(post_hoc_list) > 0){
@@ -1057,7 +1046,7 @@ pval_postHoc_OutPut <- function(outcomemeasureTitle, nlme_model, modelData, post
       
       modelData$condition_test_period <- paste(modelData$condition,",", modelData$test_period, sep= "")
       newData <- aggregate(value ~ Subject_id + condition_test_period, data = modelData, FUN = mean)
-      performTtests(newData, doc, "condition2:light:test_period", outcomemeasureTitle)
+      performTtests(newData, doc, "condition2:light:test_period")
       
       
       if(length(post_hoc_list) > 0){
